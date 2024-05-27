@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import flet as ft
 
 
@@ -51,10 +53,57 @@ class Controller:
         self._view.update_page()
 
     def handleTestConnessione(self, e):
-        print(f"handleTestConnessione called")
+        v0 = self._choiceAeroportoP
+        v1 = self._choiceAeroportoA
+
+        self._view._txt_result.controls.clear()
+
+        # Verificare che ci sia un percorso
+        if (not self._model.esistePercorso(v0, v1)):
+            self._view._txt_result.controls.append(
+                ft.Text(f"Non esiste un percorso fra {v0} e {v1}."))
+            return
+        else:
+            self._view._txt_result.controls.append(
+                ft.Text(f"Percorso fra {v0} e {v1} trovato.")
+            )
+
+        # trovare un possibile percorso
+        path = self._model.trovaCamminoBFS(v0, v1)
+        self._view._txt_result.controls.append(
+            ft.Text(f"Il cammino con minor numero di archi"
+                    f" fra {v0} e {v1} è:")
+        )
+        for p in path:
+            self._view._txt_result.controls.append(ft.Text(f"{p}"))
+
+        self._view._txtInNumTratte.disabled = False
+        self._view._btnCercaItinerario.disabled = False
+        self._view.update_page()
 
     def handleCercaItinerario(self,e):
-        print(f"handleCercaItinerario called")
+        v0 = self._choiceAeroportoP
+        v1 = self._choiceAeroportoA
+        t = self._view._txtInNumTratte.value
+
+        try: tInt = int(t)
+        except ValueError:
+            self._view._txt_result.controls.clear()
+            self._view._txt_result.controls.append(ft.Text("Il valore inserito non è un numero."))
+            self._view.update_page()
+            return
+
+        tic = datetime.now()
+        path, nTot = self._model.getCamminoOttimo(v0, v1, tInt)
+        self._view._txt_result.controls.clear()
+        self._view._txt_result.controls.append(ft.Text(f"Il percorso ottimo fra {v0} e {v1} è:"))
+        for p in path:
+            self._view._txt_result.controls.append(ft.Text(p))
+        self._view._txt_result.controls.append(ft.Text(
+            f"Numero totale di voli: {nTot} "))
+        self._view._txt_result.controls.append(ft.Text(
+            f"Tempo impiegato per la ricerca: {datetime.now()-tic} secondi"))
+        self._view.update_page()
 
     def fillDD(self):
         allNodes = self._model.getAllNodes()
