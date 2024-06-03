@@ -29,16 +29,12 @@ class Model:
         # Verificare che parziale sia una possibile soluzione
             #Verificare se parziale è meglio di best
             #esco
-        if len(parziale) == t+1:
-            return
-
         if self.getObjFun(parziale) > self._bestObjFun and parziale[-1] == target:
             self._bestObjFun = self.getObjFun(parziale)
             self._bestPath = copy.deepcopy(parziale)
 
-
-
-
+        if len(parziale) == t+1:
+            return
 
         # Posso ancora aggiungere nodi.
             #prendo i vicini e provo ad aggiungere
