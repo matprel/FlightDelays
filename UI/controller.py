@@ -58,11 +58,11 @@ class Controller:
 
         self._view._txt_result.controls.clear()
 
-        # Verificare che ci sia un percorso
+        # Verificare che ci sia un percorso (se esiste un cammino)
         if (not self._model.esistePercorso(v0, v1)):
             self._view._txt_result.controls.append(
                 ft.Text(f"Non esiste un percorso fra {v0} e {v1}."))
-            return
+            return #se non lo trovo esco
         else:
             self._view._txt_result.controls.append(
                 ft.Text(f"Percorso fra {v0} e {v1} trovato.")

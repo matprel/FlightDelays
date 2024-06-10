@@ -16,12 +16,12 @@ class Model:
         self._bestObjFun = 0
 
     def getCamminoOttimo(self, v0, v1, t):
-        self._bestPath = []
+        self._bestPath = [] # ogni volta che cerco un cammino riparto da 0
         self._bestObjFun = 0
 
-        parziale = [v0]
+        parziale = [v0] #soluzione parziale
 
-        self._ricorsione(parziale, v1, t)
+        self._ricorsione(parziale, v1, t) # i parametri sono: soluzione parziale, target(v1, dove voglio arrivare), numero massimo di archi
 
         return self._bestPath, self._bestObjFun
 
@@ -30,16 +30,16 @@ class Model:
             #Verificare se parziale è meglio di best
             #esco
         if self.getObjFun(parziale) > self._bestObjFun and parziale[-1] == target:
-            self._bestObjFun = self.getObjFun(parziale)
+            self._bestObjFun = self.getObjFun(parziale) #aggiorno
             self._bestPath = copy.deepcopy(parziale)
 
         if len(parziale) == t+1:
             return
-
-        # Posso ancora aggiungere nodi.
+        #Se non sono ancora uscito:
+        # Posso ancora aggiungere nodi in quanto parziale è minore della soluzione Best
             #prendo i vicini e provo ad aggiungere
             #ricorsione
-        for n in self._grafo.neighbors(parziale[-1]):
+        for n in self._grafo.neighbors(parziale[-1]): #ciclo sui vicini e li appendo
             if n not in parziale:
                 parziale.append(n)
                 self._ricorsione(parziale, target, t)
@@ -48,7 +48,7 @@ class Model:
 
     def getObjFun(self, listOfNodes):
         objVal = 0
-        for i in range(0, len(listOfNodes)-1):
+        for i in range(0, len(listOfNodes)-1): #ciclo sui nodi e prendo gli archi, metto -1 perchè se no prenderei un arco che non esiste
             objVal += self._grafo[listOfNodes[i]][listOfNodes[i+1]]["weight"]
 
         return objVal
@@ -59,7 +59,7 @@ class Model:
         self._grafo.add_nodes_from(self._nodi)
         self._addEdgesV2()
 
-    def _addEdgesV1(self):
+    def _addEdgesV1(self): # primo modo per aggiungere gli archi
         allConnessioni = DAO.getAllEdgesV1(self._idMap)
         for c in allConnessioni:
             v0 = c.V0
@@ -71,36 +71,37 @@ class Model:
                 else:
                     self._grafo.add_edge(v0,v1, weight=peso)
 
-    def _addEdgesV2(self):
+    def _addEdgesV2(self): #secondo modo per aggiungere gli archi
         allConnessioni = DAO.getAllEdgesV2(self._idMap)
         for c in allConnessioni:
             if c.V0 in self._grafo and c.V1 in self._grafo:
                 self._grafo.add_edge(c.V0, c.V1, weight = c.N)
 
     def getSortedVicini(self, v0):
-        vicini = self._grafo.neighbors(v0)
+        vicini = self._grafo.neighbors(v0) # vicini non ordinati
         viciniTuple = []
         for v in vicini:
-            viciniTuple.append((v, self._grafo[v0][v]["weight"]))
-        viciniTuple.sort(key=lambda x: x[1], reverse=True)
+            viciniTuple.append((v, self._grafo[v0][v]["weight"])) # lista di tuple con nodo e peso rispetto a v0
+        viciniTuple.sort(key=lambda x: x[1], reverse=True) #vicini ordinati a seconda del peso dell'arco
 
         return viciniTuple
 
     def esistePercorso(self, v0, v1):
-        connessa = nx.node_connected_component(self._grafo, v0)
+        connessa = nx.node_connected_component(self._grafo, v0) #prendo la componente connessa che contiene v0
         if v1 in connessa:
             return True
 
         return False
 
     def trovaCamminoD(self, v0, v1):
-        return nx.dijkstra_path(self._grafo, v0, v1)
+        return nx.dijkstra_path(self._grafo, v0, v1) # restituisce una lista di nodi ( cammino ottimo, peso degli archi minimo)
 
+    #oppure costruisco gli alberi di visita
     def trovaCamminoBFS(self, v0, v1):
-        tree = nx.bfs_tree(self._grafo, v0)
+        tree = nx.bfs_tree(self._grafo, v0) #restituisce un grafo orientato
         if v1 in tree:
             print(f"{v1} è presente nell'albero di visita BFS")
-        path = [v1]
+        path = [v1] #perchè parto dalla fine
 
         while path[-1] != v0:
             path.append(list(tree.predecessors(path[-1]))[0])
@@ -109,7 +110,7 @@ class Model:
         return path
 
     def trovaCamminoDFS(self, v0, v1):
-        tree = nx.dfs_tree(self._grafo, v0)
+        tree = nx.dfs_tree(self._grafo, v0) #restituisce un grafo
         if v1 in tree:
             print(f"{v1} è presente nell'albero di visita DFS")
         path = [v1]
